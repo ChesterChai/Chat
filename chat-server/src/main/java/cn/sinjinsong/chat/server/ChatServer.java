@@ -125,7 +125,7 @@ public class ChatServer {
                             handleAcceptRequest();
                         } else if (key.isReadable()) {
                             //如果"读取"事件已就绪
-                            //取消可读触发标记，本次处理完后才打开读取事件标记
+                            //取消该key对应通道的可读触发标记，本次处理完后才打开读取事件标记
                             key.interestOps(key.interestOps() & (~SelectionKey.OP_READ));
                             //交由读取事件的处理器处理
                             readPool.execute(new ReadEventHandler(key));
@@ -158,7 +158,7 @@ public class ChatServer {
     }
 
     /**
-     * 处理客户端的连接请求
+     * 处理客户端的连接请求，主要做的事情就是，建立SocketChannel并注册到selector上
      */
     private void handleAcceptRequest() {
         try {
@@ -174,7 +174,7 @@ public class ChatServer {
     }
 
     /**
-     * 处于线程池中的线程会随着线程池的shutdown方法而关闭
+     * 处理客户端有消息发送过来的情况，处于线程池中的线程会随着线程池的shutdown方法而关闭
      */
     private class ReadEventHandler implements Runnable {
 
@@ -203,7 +203,7 @@ public class ChatServer {
                     return;
                 }
                 log.info("读取完毕，继续监听");
-                //继续监听读取事件
+                //继续监听读取事件，对应之前给这个key通道取消读取事件
                 key.interestOps(key.interestOps() | SelectionKey.OP_READ);
                 key.selector().wakeup();
                 byte[] bytes = baos.toByteArray();
@@ -213,7 +213,7 @@ public class ChatServer {
                 try {
                     messageHandler.handle(message, selector, key, downloadTaskQueue, onlineUsers);
                 } catch (InterruptedException e) {
-                    log.error("服务器线程被中断");
+                    log.error("用户消息处理线程被中断");
                     exceptionHandler.handle(client, message);
                     e.printStackTrace();
                 }

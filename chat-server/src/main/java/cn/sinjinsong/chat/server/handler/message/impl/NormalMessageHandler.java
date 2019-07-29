@@ -34,7 +34,7 @@ public class NormalMessageHandler extends MessageHandler {
             MessageHeader header = message.getHeader();
             SocketChannel receiverChannel = userManager.getUserChannel(header.getReceiver());
             if (receiverChannel == null) {
-                //接收者下线
+                //接收者不在线
                 byte[] response = ProtoStuffUtil.serialize(
                         new Response(
                                 ResponseHeader.builder()

@@ -31,7 +31,7 @@ public class LoginMessageHandler extends MessageHandler {
         SocketChannel clientChannel = (SocketChannel) client.channel();
         MessageHeader header = message.getHeader();
         String username = header.getSender();
-        String password = new String(message.getBody(),PromptMsgProperty.charset);
+        String password = new String(message.getBody(), PromptMsgProperty.charset);
         try {
             if (userManager.login(clientChannel, username, password)) {
                 byte[] response = ProtoStuffUtil.serialize(

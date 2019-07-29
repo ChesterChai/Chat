@@ -9,7 +9,9 @@ import java.util.Map;
 public enum ResponseCode {
     LOGIN_SUCCESS(1,"登录成功"),
     LOGIN_FAILURE(2,"登录失败"),
-    LOGOUT_SUCCESS(3,"下线成功");
+    REGISTER_SUCCESS(3, "注册成功"),
+    REGISTER_FAILURE(4, "注册失败"),
+    LOGOUT_SUCCESS(5,"下线成功");
     
     private int code;
     private String desc;

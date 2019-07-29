@@ -30,7 +30,7 @@ public class BroadcastMessageHandler extends MessageHandler {
                                     .sender(message.getHeader().getSender())
                                     .timestamp(message.getHeader().getTimestamp()).build(),
                                     message.getBody()));
-            super.broadcast(response,server);
+            super.broadcast(response, server);
         } catch (IOException e) {
             e.printStackTrace();
         }

@@ -18,10 +18,9 @@ import java.util.concurrent.*;
 @Slf4j
 public class TaskManagerThread extends Thread {
     private ExecutorService taskPool;
+    private ExecutorService crawlerPool;
     private BlockingQueue<Task> taskBlockingQueue;
     private HttpConnectionManager httpConnectionManager;
-
-    private ExecutorService crawlerPool;
 
 
     public TaskManagerThread(BlockingQueue<Task> taskBlockingQueue) {
@@ -58,7 +57,7 @@ public class TaskManagerThread extends Thread {
                 task = taskBlockingQueue.take();
                 log.info("{}已从阻塞队列中取出",task.getReceiver().getRemoteAddress());
                 BaseTaskHandler taskHandler = SpringContextUtil.getBean("BaseTaskHandler", task.getType().toString().toLowerCase());
-                taskHandler.init(task,httpConnectionManager,this);
+                taskHandler.init(task, httpConnectionManager, this);
                 System.out.println(taskHandler);
                 taskPool.execute(taskHandler);
             }

@@ -1,18 +1,19 @@
 package cn.sinjinsong.chat.client;
 
+import cn.sinjinsong.chat.client.GUI.LoginFrame;
+import cn.sinjinsong.chat.client.GUI.MainFrame;
 import cn.sinjinsong.common.domain.*;
 import cn.sinjinsong.common.enumeration.MessageType;
 import cn.sinjinsong.common.enumeration.ResponseCode;
 import cn.sinjinsong.common.enumeration.TaskType;
-import cn.sinjinsong.common.util.DateTimeUtil;
-import cn.sinjinsong.common.util.FileUtil;
-import cn.sinjinsong.common.util.ProtoStuffUtil;
+import cn.sinjinsong.common.util.*;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.net.ConnectException;
 import java.net.InetSocketAddress;
@@ -27,54 +28,22 @@ import java.util.Iterator;
 public class ChatClient extends Frame {
 
     public static final int DEFAULT_BUFFER_SIZE = 1024;
-    private Selector selector;
-    private SocketChannel clientChannel;
+
+    public static SocketChannel clientChannel;
+    private static TextArea taContent;
+    private static ReceiverHandler listener;
+    public static String username;
+    public static boolean isLogin = false;
+    private static boolean isConnected = false;
+    private static Charset charset = StandardCharsets.UTF_8;
     private ByteBuffer buf;
-    private TextField tfText;
-    private TextArea taContent;
-    private ReceiverHandler listener;
-    private String username;
-    private boolean isLogin = false;
-    private boolean isConnected = false;
-    private Charset charset = StandardCharsets.UTF_8;
+    private Selector selector;
+
 
     public ChatClient(String name, int x, int y, int w, int h) {
         super(name);
-        initFrame(x, y, w, h);
+        new MainFrame(x, y, w, h);
         initNetWork();
-    }
-
-    /**
-     * 初始化窗体
-     *
-     * @param x
-     * @param y
-     * @param w
-     * @param h
-     */
-    private void initFrame(int x, int y, int w, int h) {
-        this.tfText = new TextField();
-        this.taContent = new TextArea();
-        this.setBounds(x, y, w, h);
-        this.setLayout(new BorderLayout());
-        this.addWindowListener(new WindowAdapter() {
-            @Override
-            public void windowClosing(WindowEvent e) {
-                setVisible(false);
-                disConnect();
-                System.exit(0);
-            }
-        });
-        this.taContent.setEditable(false);
-        this.add(tfText, BorderLayout.SOUTH);
-        this.add(taContent, BorderLayout.NORTH);
-        this.tfText.addActionListener((actionEvent) -> {
-            String str = tfText.getText().trim();
-            tfText.setText("");
-            send(str);
-        });
-        this.pack();
-        this.setVisible(true);
     }
 
     /**
@@ -88,7 +57,7 @@ public class ChatClient extends Frame {
             clientChannel.configureBlocking(false);
             clientChannel.register(selector, SelectionKey.OP_READ);
             buf = ByteBuffer.allocate(DEFAULT_BUFFER_SIZE);
-            login();
+            new LoginFrame();
             isConnected = true;
         } catch (ConnectException e) {
             JOptionPane.showMessageDialog(this, "连接服务器失败");
@@ -102,24 +71,7 @@ public class ChatClient extends Frame {
         new Thread(listener).start();
     }
 
-    private void login() {
-        String username = JOptionPane.showInputDialog("请输入用户名");
-        String password = JOptionPane.showInputDialog("请输入密码");
-        Message message = new Message(
-                MessageHeader.builder()
-                        .type(MessageType.LOGIN)
-                        .sender(username)
-                        .timestamp(System.currentTimeMillis())
-                        .build(), password.getBytes(charset));
-        try {
-            clientChannel.write(ByteBuffer.wrap(ProtoStuffUtil.serialize(message)));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        this.username = username;
-    }
-
-    private void disConnect() {
+    public static void disConnect() {
         try {
             logout();
             if (!isConnected) {
@@ -127,7 +79,7 @@ public class ChatClient extends Frame {
             }
             listener.shutdown();
             //如果发送消息后马上断开连接，那么消息可能无法送达
-            Thread.sleep(10);
+            Thread.sleep(500);
             clientChannel.socket().close();
             clientChannel.close();
         } catch (IOException e) {
@@ -137,7 +89,7 @@ public class ChatClient extends Frame {
         }
     }
 
-    private void logout() {
+    private static void logout() {
         if (!isLogin) {
             return;
         }
@@ -156,65 +108,14 @@ public class ChatClient extends Frame {
     }
 
     /**
-     * 发送信息，监听在回车键上
-     *
-     * @param content
-     */
-    public void send(String content) {
-        if (!isLogin) {
-            JOptionPane.showMessageDialog(null, "尚未登录");
-            return;
-        }
-        try {
-            Message message;
-            //普通模式
-            if (content.startsWith("@")) {
-                String[] slices = content.split(":");
-                String receiver = slices[0].substring(1);
-                message = new Message(
-                        MessageHeader.builder()
-                                .type(MessageType.NORMAL)
-                                .sender(username)
-                                .receiver(receiver)
-                                .timestamp(System.currentTimeMillis())
-                                .build(), slices[1].getBytes(charset));
-            } else if (content.startsWith("task")) {
-                String info = content.substring(content.indexOf('.') + 1);
-                int split = info.indexOf(':');
-                TaskDescription taskDescription = new TaskDescription(TaskType.valueOf(info.substring(0,split).toUpperCase()), info.substring(split+1));
-                //处理不同的Task类型
-                message = new Message(
-                        MessageHeader.builder()
-                                .type(MessageType.TASK)
-                                .sender(username)
-                                .timestamp(System.currentTimeMillis())
-                                .build(), ProtoStuffUtil.serialize(taskDescription));
-            } else {
-                //广播模式
-                message = new Message(
-                        MessageHeader.builder()
-                                .type(MessageType.BROADCAST)
-                                .sender(username)
-                                .timestamp(System.currentTimeMillis())
-                                .build(), content.getBytes(charset));
-            }
-            System.out.println(message);
-            clientChannel.write(ByteBuffer.wrap(ProtoStuffUtil.serialize(message)));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    /**
      * 用于接收信息的线程
      */
     private class ReceiverHandler implements Runnable {
-        private boolean connected = true;
+        private volatile boolean connected = true;
 
         public void shutdown() {
             connected = false;
         }
-
 
         public void run() {
             try {
@@ -249,18 +150,31 @@ public class ChatClient extends Frame {
             ResponseHeader header = response.getHeader();
             switch (header.getType()) {
                 case PROMPT:
-                    if (header.getResponseCode() != null) {
-                        ResponseCode code = ResponseCode.fromCode(header.getResponseCode());
-                        if (code == ResponseCode.LOGIN_SUCCESS) {
-                            isLogin = true;
-                            System.out.println("登录成功");
-                        } else if (code == ResponseCode.LOGOUT_SUCCESS) {
-                            System.out.println("下线成功");
-                            break;
-                        }
-                    }
                     String info = new String(response.getBody(), charset);
                     JOptionPane.showMessageDialog(ChatClient.this, info);
+                    if (header.getResponseCode() != null) {
+                        ResponseCode code = ResponseCode.fromCode(header.getResponseCode());
+                        switch (code){
+                            case LOGIN_SUCCESS:
+                                isLogin = true;
+                                System.out.println("登陆成功");
+                                break;
+                            case LOGOUT_SUCCESS:
+                                System.out.println("下线成功");
+                                break;
+                            case LOGIN_FAILURE:
+                                System.out.println("登陆失败");
+                                new LoginFrame();
+                                break;
+                            case REGISTER_FAILURE:
+                                System.out.println("注册失败");
+                                new LoginFrame();
+                                break;
+                            case REGISTER_SUCCESS:
+                                System.out.println("注册成功");
+                                break;
+                        }
+                    }
                     break;
                 case NORMAL:
                     String content = formatMessage(taContent.getText(), response);
@@ -269,12 +183,14 @@ public class ChatClient extends Frame {
                     break;
                 case FILE:
                     try {
-                        String path = JOptionPane.showInputDialog("请输入保存的文件路径");
+
+                        File filePath = SelectFilesAndDir.select();
+                        String path = filePath.getAbsolutePath() + JOptionPane.showInputDialog("请输入保存文件名");
                         byte[] buf = response.getBody();
                         FileUtil.save(path, buf);
                         if(path.endsWith("jpg")){
                             //显示该图片
-                            new PictureDialog(ChatClient.this, "图片", false, path);
+                            ShowPictureDialog.show(ChatClient.this, "图片", false, path);
                         }
                     } catch (IOException e) {
                         e.printStackTrace();
@@ -284,6 +200,12 @@ public class ChatClient extends Frame {
             }
         }
 
+        /**
+         * 将原来客户端界面上的消息和现在接收到的消息一起合成一个字符串
+         * @param originalText
+         * @param response
+         * @return
+         */
         private String formatMessage(String originalText, Response response) {
             ResponseHeader header = response.getHeader();
             StringBuilder sb = new StringBuilder();
@@ -298,17 +220,12 @@ public class ChatClient extends Frame {
         }
     }
 
+    public static void setUsername(String un){
+        username = un;
+    }
 
-    private static class PictureDialog extends JDialog {
-        public PictureDialog(Frame owner, String title, boolean modal,
-                             String path) {
-            super(owner, title, modal);
-            ImageIcon icon = new ImageIcon(path);
-            JLabel lbPhoto = new JLabel(icon);
-            this.add(lbPhoto);
-            this.setSize(icon.getIconWidth(), icon.getIconHeight());
-            this.setVisible(true);
-        }
+    public static void setTaContent(TextArea tc){
+        taContent = tc;
     }
 
     public static void main(String[] args) {

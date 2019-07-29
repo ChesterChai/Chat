@@ -31,6 +31,13 @@ public class UserManager {
         onlineUsers = new ConcurrentHashMap<>();
     }
 
+    /**
+     * 用户登录验证，如果登陆成功加入在线用户
+     * @param channel
+     * @param username
+     * @param password
+     * @return
+     */
     public synchronized  boolean login(SocketChannel channel, String username, String password) {
         if (!users.containsKey(username)) {
             return false;
