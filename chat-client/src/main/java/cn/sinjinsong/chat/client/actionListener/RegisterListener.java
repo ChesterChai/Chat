@@ -1,6 +1,8 @@
 package cn.sinjinsong.chat.client.actionListener;
 
 import cn.sinjinsong.chat.client.ChatClient;
+import cn.sinjinsong.chat.client.GUI.LoginFrame;
+import cn.sinjinsong.chat.client.GUI.RegisterFrame;
 import cn.sinjinsong.common.domain.Message;
 import cn.sinjinsong.common.domain.MessageHeader;
 import cn.sinjinsong.common.enumeration.MessageType;
@@ -18,17 +20,25 @@ public class RegisterListener implements ActionListener {
     private Charset charset = StandardCharsets.UTF_8;
     private JTextField jt;//账号输入框对象
     private JPasswordField jp;//密码输入框对象
+    private JPasswordField jrp;//确认密码输入框对象
 
-    private JFrame login;//定义一个窗体对象
-    public RegisterListener(JFrame login, JTextField jt, JPasswordField jp) {
-        this.login=login;//获取登录界面
+    private JFrame register;//定义一个窗体对象
+    public RegisterListener(JFrame register, JTextField jt, JPasswordField jp, JPasswordField jrp) {
+        this.register=register;//获取登录界面
         this.jt=jt;//获取登录界面中的账号输入框对象
         this.jp=jp;//获取登录界面中的密码输入框对象
+        this.jrp = jrp;//获取登录界面中的确认密码输入框对象
     }
 
     public void actionPerformed(ActionEvent actionEvent) {
         String username = jt.getText();
-        String password = jp.getText();
+        String password = String.valueOf(jp.getPassword());
+        String repassword = String.valueOf(jrp.getPassword());
+
+        if(!password.equals(repassword)){
+            JOptionPane.showMessageDialog(register, "密码和确认密码输入不一致");
+            return;
+        }
 
         Message message = new Message(
                 MessageHeader.builder()
@@ -41,8 +51,10 @@ public class RegisterListener implements ActionListener {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        ChatClient.setUsername(username);
+        //提示注册成功，这里需要来自服务器的确认，暂时先搁置
+        JOptionPane.showMessageDialog(register, "注册成功");
+        new LoginFrame();
         // 通过我们获取的登录界面对象，用dispose方法关闭它
-        login.dispose();
+        register.dispose();
     }
 }

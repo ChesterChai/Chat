@@ -1,5 +1,10 @@
 # Java基于多线程和NIO实现聊天室
 
+- 环境搭建
+   - 安装mysql
+   - 运行mybatisDB.sql文件中的内容，创建数据表
+   - 更改服务器中的全局配置文件jdbcConfig.properties以符合你自己的情况
+
 - 涉及到的技术点
    - 线程池ThreadPoolExecutor
    - 阻塞队列BlockingQueue，生产者消费者模式
@@ -9,6 +14,7 @@
    - ProtoStuff 高性能序列化
    - HttpClient连接池
    - Spring依赖注入
+   - mybatis
    - lombok简化POJO开发
    - 原子变量
    - 内置锁
