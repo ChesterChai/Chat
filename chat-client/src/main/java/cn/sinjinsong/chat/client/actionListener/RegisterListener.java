@@ -51,9 +51,7 @@ public class RegisterListener implements ActionListener {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        //提示注册成功，这里需要来自服务器的确认，暂时先搁置
-        JOptionPane.showMessageDialog(register, "注册成功");
-        new LoginFrame();
+
         // 通过我们获取的登录界面对象，用dispose方法关闭它
         register.dispose();
     }

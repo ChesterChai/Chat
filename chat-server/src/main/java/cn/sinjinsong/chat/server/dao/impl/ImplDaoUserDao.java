@@ -45,7 +45,7 @@ public class ImplDaoUserDao implements IDaoUserDao {
     }
 
     @Override
-    public void saveUser(DaoUser user) {
-        userDao.saveUser(user);
+    public int saveUser(DaoUser user) {
+        return userDao.saveUser(user);
     }
 }

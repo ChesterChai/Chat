@@ -7,6 +7,7 @@ import cn.sinjinsong.common.domain.TaskDescription;
 import cn.sinjinsong.common.enumeration.MessageType;
 import cn.sinjinsong.common.enumeration.TaskType;
 import cn.sinjinsong.common.util.ProtoStuffUtil;
+import org.springframework.stereotype.Component;
 
 import javax.swing.*;
 import java.awt.*;

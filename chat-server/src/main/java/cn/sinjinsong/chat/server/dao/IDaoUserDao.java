@@ -20,5 +20,5 @@ public interface IDaoUserDao {
      * @param user
      */
     @Insert("insert into users(userName,password,registerTime) values(#{userName},#{password},#{registerTime})")
-    void saveUser(DaoUser user);
+    int saveUser(DaoUser user);
 }

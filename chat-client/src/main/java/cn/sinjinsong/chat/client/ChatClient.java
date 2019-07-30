@@ -2,6 +2,7 @@ package cn.sinjinsong.chat.client;
 
 import cn.sinjinsong.chat.client.GUI.LoginFrame;
 import cn.sinjinsong.chat.client.GUI.MainFrame;
+import cn.sinjinsong.chat.client.GUI.RegisterFrame;
 import cn.sinjinsong.common.domain.*;
 import cn.sinjinsong.common.enumeration.MessageType;
 import cn.sinjinsong.common.enumeration.ResponseCode;
@@ -31,6 +32,7 @@ public class ChatClient extends Frame {
 
     public static SocketChannel clientChannel;
     private static TextArea taContent;
+    private static JTextArea userStateText;
     private static ReceiverHandler listener;
     public static String username;
     public static boolean isLogin = false;
@@ -60,7 +62,7 @@ public class ChatClient extends Frame {
             new LoginFrame();
             isConnected = true;
         } catch (ConnectException e) {
-            JOptionPane.showMessageDialog(this, "连接服务器失败");
+            JOptionPane.showMessageDialog(this, "无法连接到服务器");
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -168,10 +170,22 @@ public class ChatClient extends Frame {
                                 break;
                             case REGISTER_FAILURE:
                                 System.out.println("注册失败");
-                                new LoginFrame();
+                                new RegisterFrame();
                                 break;
                             case REGISTER_SUCCESS:
+                                new LoginFrame();
                                 System.out.println("注册成功");
+                                break;
+                        }
+                    }
+                    break;
+                case SERVERMASSAGE:
+                    if (header.getResponseCode() != null) {
+                        ResponseCode code = ResponseCode.fromCode(header.getResponseCode());
+                        switch (code){
+                            case USER_STATE:
+                                String userOnline = new String(response.getBody(), charset);
+                                userStateText.setText(userOnline);
                                 break;
                         }
                     }
@@ -228,9 +242,13 @@ public class ChatClient extends Frame {
         taContent = tc;
     }
 
+    public static void setUserStateText(JTextArea ta){
+        userStateText = ta;
+    }
+
     public static void main(String[] args) {
         System.out.println("Initialing...");
-        ChatClient client = new ChatClient("Client", 200, 200, 300, 200);
+        ChatClient client = new ChatClient("Client", 200, 200, 600, 400);
         client.launch();
     }
 }

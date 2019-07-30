@@ -45,14 +45,16 @@ public class LogoutMessageHandler extends MessageHandler {
                             PromptMsgProperty.LOGOUT_SUCCESS.getBytes(PromptMsgProperty.charset)));
             clientChannel.write(ByteBuffer.wrap(response));
             onlineUsers.decrementAndGet();
+            String userOnline = String.join("\n", userManager.usersOnline());
             //下线广播
             byte[] logoutBroadcast = ProtoStuffUtil.serialize(
                     new Response(
                             ResponseHeader.builder()
-                                    .type(ResponseType.NORMAL)
+                                    .type(ResponseType.SERVERMASSAGE)
+                                    .responseCode(ResponseCode.USER_STATE.getCode())
                                     .sender(SYSTEM_SENDER)
                                     .timestamp(message.getHeader().getTimestamp()).build(),
-                            String.format(PromptMsgProperty.LOGOUT_BROADCAST, message.getHeader().getSender()).getBytes(PromptMsgProperty.charset)));
+                            String.format(userOnline).getBytes(PromptMsgProperty.charset)));
             super.broadcast(logoutBroadcast, server);
             log.info("客户端退出");
             //必须要cancel，否则无法从keys从去除该客户端

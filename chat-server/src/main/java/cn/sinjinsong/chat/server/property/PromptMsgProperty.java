@@ -15,5 +15,7 @@ public class PromptMsgProperty {
     public static final String LOGIN_BROADCAST = "%s用户已上线";
     public static final String LOGOUT_BROADCAST = "%s用户已下线";
     public static final String SERVER_ERROR = "服务器内部出现错误，请重试";
+    public static final String NAME_EXISTS = "用户名已存在";
+    public static final String REGISTER_SUCCESS = "注册成功";
     public static final Charset charset = StandardCharsets.UTF_8;
 }

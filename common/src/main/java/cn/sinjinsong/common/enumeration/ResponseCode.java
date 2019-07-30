@@ -7,11 +7,14 @@ import java.util.Map;
  * Created by SinjinSong on 2017/5/23.
  */
 public enum ResponseCode {
+    //通知类型
     LOGIN_SUCCESS(1,"登录成功"),
     LOGIN_FAILURE(2,"登录失败"),
     REGISTER_SUCCESS(3, "注册成功"),
     REGISTER_FAILURE(4, "注册失败"),
-    LOGOUT_SUCCESS(5,"下线成功");
+    LOGOUT_SUCCESS(5,"下线成功"),
+    //服务器消息类型
+    USER_STATE(6,"用户信息");
     
     private int code;
     private String desc;

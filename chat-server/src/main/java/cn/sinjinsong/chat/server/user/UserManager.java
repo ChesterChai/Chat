@@ -8,6 +8,7 @@ import org.springframework.stereotype.Component;
 
 import java.nio.channels.SocketChannel;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -50,6 +51,10 @@ public class UserManager {
         channelToName.put(channel, username);
 
         return true;
+    }
+
+    public synchronized Set<String> usersOnline(){
+        return nameToChannel.keySet();
     }
     
     public synchronized void logout(SocketChannel channel) {
