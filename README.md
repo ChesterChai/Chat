@@ -26,7 +26,7 @@
    - 单聊
    - 群聊
    - 客户端提交任务,下载图片并显示
-   - 上线下线公告
+   - 在线用户，和所有用户列表显示
    - 在线用户记录
    - 批量下载豆瓣电影的图片，并打为压缩包传输给客户端
 
@@ -34,10 +34,8 @@
    - 注册：打开客户端根据提示注册用户，等待注册成功消息，点击确定按钮后自动跳转到登陆界面
    - 登录：使用注册过的用户信息直接在登陆界面输入，然后点击登陆按钮即可
    - 注销：关闭客户端即可
-   - 单聊：@username:message
-        - 例：@user2:hello
-   - 群聊：message
-        -  例：hello,everyone
+   - 单聊：在输入框中输入：@username ,出现与username的单聊聊天框
+   - 群聊：直接在输入框中输入消息
    - 提交任务：task.file:图片的URL  / task.crawl_image:豆瓣电影的id[?imageSize=n] 可以加请求参数
         - 例1：task.file:https://img1.doubanio.com/view/movie_poster_cover/lpst/public/p2107289058.webp
           下载完毕后会弹出一个框，输入想将其保存到的路径，比如E:/img.webp

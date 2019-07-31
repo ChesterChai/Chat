@@ -5,6 +5,9 @@ import cn.sinjinsong.chat.server.domain.DaoUser;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Select;
 
+import java.util.List;
+import java.util.Set;
+
 
 public interface IDaoUserDao {
     /**
@@ -21,4 +24,11 @@ public interface IDaoUserDao {
      */
     @Insert("insert into users(userName,password,registerTime) values(#{userName},#{password},#{registerTime})")
     int saveUser(DaoUser user);
+
+    /**
+     *
+     * @return
+     */
+    @Select("select * from users")
+    Set<DaoUser> allUser();
 }

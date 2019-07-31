@@ -51,7 +51,7 @@ public class LogoutMessageHandler extends MessageHandler {
                     new Response(
                             ResponseHeader.builder()
                                     .type(ResponseType.SERVERMASSAGE)
-                                    .responseCode(ResponseCode.USER_STATE.getCode())
+                                    .responseCode(ResponseCode.USER_ONLINE.getCode())
                                     .sender(SYSTEM_SENDER)
                                     .timestamp(message.getHeader().getTimestamp()).build(),
                             String.format(userOnline).getBytes(PromptMsgProperty.charset)));

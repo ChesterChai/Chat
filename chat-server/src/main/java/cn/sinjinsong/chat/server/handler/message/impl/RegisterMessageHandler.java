@@ -4,6 +4,7 @@ import cn.sinjinsong.chat.server.dao.impl.ImplDaoUserDao;
 import cn.sinjinsong.chat.server.domain.DaoUser;
 import cn.sinjinsong.chat.server.handler.message.MessageHandler;
 import cn.sinjinsong.chat.server.property.PromptMsgProperty;
+import cn.sinjinsong.chat.server.user.UserManager;
 import cn.sinjinsong.common.domain.*;
 import cn.sinjinsong.common.enumeration.ResponseCode;
 import cn.sinjinsong.common.enumeration.ResponseType;
@@ -26,6 +27,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class RegisterMessageHandler extends MessageHandler {
     @Autowired
     private ImplDaoUserDao daoUserDao;
+    @Autowired
+    private UserManager userManager;
 
     @Override
     public void handle(Message message, Selector server, SelectionKey client, BlockingQueue<Task> queue, AtomicInteger onlineUsers) throws InterruptedException {
@@ -35,7 +38,6 @@ public class RegisterMessageHandler extends MessageHandler {
         String password = new String(message.getBody(), PromptMsgProperty.charset);
         DaoUser daoUser = DaoUser.builder().userName(username)
                 .password(password).registerTime(new Date()).build();
-
 
         try {
             if(daoUserDao.findByName(username) != null){
@@ -59,8 +61,20 @@ public class RegisterMessageHandler extends MessageHandler {
                                         .responseCode(ResponseCode.REGISTER_SUCCESS.getCode()).build(),
                                 String.format(PromptMsgProperty.REGISTER_SUCCESS).getBytes(PromptMsgProperty.charset)));
                 clientChannel.write(ByteBuffer.wrap(response));
+                Thread.sleep(10);
+                //所有用户信息
+                String allUser = String.join("\n", userManager.allUserName());
+                byte[] allUserResponse = ProtoStuffUtil.serialize(
+                        new Response(
+                                ResponseHeader.builder()
+                                        .type(ResponseType.SERVERMASSAGE)
+                                        .responseCode(ResponseCode.USER_ALL.getCode())
+                                        .sender(SYSTEM_SENDER)
+                                        .timestamp(message.getHeader().getTimestamp()).build(),
+                                String.format(allUser).getBytes(PromptMsgProperty.charset)));
+                super.broadcast(allUserResponse, server);
+                Thread.sleep(3000);
             }
-
         } catch (IOException e) {
             e.printStackTrace();
         }

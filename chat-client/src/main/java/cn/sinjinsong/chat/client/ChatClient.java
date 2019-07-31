@@ -2,17 +2,15 @@ package cn.sinjinsong.chat.client;
 
 import cn.sinjinsong.chat.client.GUI.LoginFrame;
 import cn.sinjinsong.chat.client.GUI.MainFrame;
+import cn.sinjinsong.chat.client.GUI.OneToOneChatFrame;
 import cn.sinjinsong.chat.client.GUI.RegisterFrame;
 import cn.sinjinsong.common.domain.*;
 import cn.sinjinsong.common.enumeration.MessageType;
 import cn.sinjinsong.common.enumeration.ResponseCode;
-import cn.sinjinsong.common.enumeration.TaskType;
 import cn.sinjinsong.common.util.*;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
@@ -24,7 +22,9 @@ import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 
 public class ChatClient extends Frame {
 
@@ -32,7 +32,9 @@ public class ChatClient extends Frame {
 
     public static SocketChannel clientChannel;
     private static TextArea taContent;
-    private static JTextArea userStateText;
+    public static Map<String, TextArea> oneToOneContentMap = new HashMap<>();
+    private static JTextArea userOnlineText;
+    private static JTextArea allUserText;
     private static ReceiverHandler listener;
     public static String username;
     public static boolean isLogin = false;
@@ -183,21 +185,42 @@ public class ChatClient extends Frame {
                     if (header.getResponseCode() != null) {
                         ResponseCode code = ResponseCode.fromCode(header.getResponseCode());
                         switch (code){
-                            case USER_STATE:
+                            case USER_ONLINE:
                                 String userOnline = new String(response.getBody(), charset);
-                                userStateText.setText(userOnline);
+                                userOnlineText.setText(userOnline);
+                                break;
+                            case USER_ALL:
+                                String allUser = new String(response.getBody(), charset);
+                                allUserText.setText(allUser);
                                 break;
                         }
                     }
                     break;
                 case NORMAL:
-                    String content = formatMessage(taContent.getText(), response);
-                    taContent.setText(content);
-                    taContent.setCaretPosition(content.length());
+                    if (header.getResponseCode() != null) {
+                        ResponseCode code = ResponseCode.fromCode(header.getResponseCode());
+                        switch (code){
+                            case MASSAGE_ALL:
+                                String content = formatMessage(taContent.getText(), response);
+                                taContent.setText(content);
+                                taContent.setCaretPosition(content.length());
+                                break;
+                            case MASSAGE_SINGLE:
+                                TextArea ta = oneToOneContentMap.get(header.getSender());
+                                //还没有针对单聊的窗口
+                                if(ta == null){
+                                    new OneToOneChatFrame(header.getSender(), formatMessage("", response),300, 300, 600, 400);
+                                }else {
+                                    String oneToOneContent = formatMessage(ta.getText(), response);
+                                    ta.setText(oneToOneContent);
+                                    ta.setCaretPosition(oneToOneContent.length());
+                                }
+                                break;
+                        }
+                    }
                     break;
                 case FILE:
                     try {
-
                         File filePath = SelectFilesAndDir.select();
                         String path = filePath.getAbsolutePath() + JOptionPane.showInputDialog("请输入保存文件名");
                         byte[] buf = response.getBody();
@@ -242,9 +265,13 @@ public class ChatClient extends Frame {
         taContent = tc;
     }
 
-    public static void setUserStateText(JTextArea ta){
-        userStateText = ta;
+    public static void setUserOnlineText(JTextArea ta){
+        userOnlineText = ta;
     }
+
+    public static void setAllUserText(JTextArea ta){ allUserText = ta;}
+
+
 
     public static void main(String[] args) {
         System.out.println("Initialing...");

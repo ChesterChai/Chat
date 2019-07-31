@@ -11,6 +11,8 @@ import org.springframework.stereotype.Component;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import java.io.InputStream;
+import java.util.List;
+import java.util.Set;
 
 @Component("ImplDaoUserDao")
 public class ImplDaoUserDao implements IDaoUserDao {
@@ -48,4 +50,7 @@ public class ImplDaoUserDao implements IDaoUserDao {
     public int saveUser(DaoUser user) {
         return userDao.saveUser(user);
     }
+
+    @Override
+    public Set<DaoUser> allUser(){return userDao.allUser();}
 }

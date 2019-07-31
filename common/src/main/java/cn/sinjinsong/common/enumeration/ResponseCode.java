@@ -14,8 +14,12 @@ public enum ResponseCode {
     REGISTER_FAILURE(4, "注册失败"),
     LOGOUT_SUCCESS(5,"下线成功"),
     //服务器消息类型
-    USER_STATE(6,"用户信息");
-    
+    USER_ONLINE(6,"在线用户"),
+    USER_ALL(7, "所有用户"),
+    //聊天消息类型
+    MASSAGE_ALL(8, "群发消息"),
+    MASSAGE_SINGLE(9, "单发消息");
+
     private int code;
     private String desc;
     private static Map<Integer, ResponseCode> map = new HashMap<>();

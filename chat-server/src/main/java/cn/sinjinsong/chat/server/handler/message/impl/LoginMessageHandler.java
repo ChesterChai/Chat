@@ -46,13 +46,25 @@ public class LoginMessageHandler extends MessageHandler {
                 //连续发送信息不可行,必须要暂时中断一下
                 //粘包问题
                 Thread.sleep(10);
+                //所有用户信息
+                String allUser = String.join("\n", userManager.allUserName());
+                byte[] allUserResponse = ProtoStuffUtil.serialize(
+                        new Response(
+                                ResponseHeader.builder()
+                                        .type(ResponseType.SERVERMASSAGE)
+                                        .responseCode(ResponseCode.USER_ALL.getCode())
+                                        .sender(SYSTEM_SENDER)
+                                        .timestamp(message.getHeader().getTimestamp()).build(),
+                                String.format(allUser).getBytes(PromptMsgProperty.charset)));
+                clientChannel.write(ByteBuffer.wrap(allUserResponse));
+                Thread.sleep(3000);
                 //在线用户消息广播
                 String userOnline = String.join("\n", userManager.usersOnline());
                 byte[] loginBroadcast = ProtoStuffUtil.serialize(
                         new Response(
                                 ResponseHeader.builder()
                                         .type(ResponseType.SERVERMASSAGE)
-                                        .responseCode(ResponseCode.USER_STATE.getCode())
+                                        .responseCode(ResponseCode.USER_ONLINE.getCode())
                                         .sender(SYSTEM_SENDER)
                                         .timestamp(message.getHeader().getTimestamp()).build(),
                                 String.format(userOnline).getBytes(PromptMsgProperty.charset)));

@@ -5,6 +5,7 @@ import cn.sinjinsong.common.domain.Task;
 import cn.sinjinsong.common.domain.Message;
 import cn.sinjinsong.common.domain.Response;
 import cn.sinjinsong.common.domain.ResponseHeader;
+import cn.sinjinsong.common.enumeration.ResponseCode;
 import cn.sinjinsong.common.enumeration.ResponseType;
 import cn.sinjinsong.common.util.ProtoStuffUtil;
 import org.springframework.stereotype.Component;
@@ -27,6 +28,7 @@ public class BroadcastMessageHandler extends MessageHandler {
                     new Response(
                             ResponseHeader.builder()
                                     .type(ResponseType.NORMAL)
+                                    .responseCode(ResponseCode.MASSAGE_ALL.getCode())
                                     .sender(message.getHeader().getSender())
                                     .timestamp(message.getHeader().getTimestamp()).build(),
                                     message.getBody()));

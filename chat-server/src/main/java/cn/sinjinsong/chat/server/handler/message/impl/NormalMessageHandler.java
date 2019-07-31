@@ -4,6 +4,7 @@ import cn.sinjinsong.chat.server.handler.message.MessageHandler;
 import cn.sinjinsong.chat.server.property.PromptMsgProperty;
 import cn.sinjinsong.chat.server.user.UserManager;
 import cn.sinjinsong.common.domain.*;
+import cn.sinjinsong.common.enumeration.ResponseCode;
 import cn.sinjinsong.common.enumeration.ResponseType;
 import cn.sinjinsong.common.util.ProtoStuffUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -49,14 +50,13 @@ public class NormalMessageHandler extends MessageHandler {
                         new Response(
                                 ResponseHeader.builder()
                                         .type(ResponseType.NORMAL)
+                                        .responseCode(ResponseCode.MASSAGE_SINGLE.getCode())
                                         .sender(message.getHeader().getSender())
                                         .timestamp(message.getHeader().getTimestamp())
                                         .build(),
                                 message.getBody()));
                 log.info("已转发给",receiverChannel);
                 receiverChannel.write(ByteBuffer.wrap(response));
-                //也给自己发送一份
-                clientChannel.write(ByteBuffer.wrap(response));
             }
         } catch (IOException e) {
             e.printStackTrace();

@@ -1,11 +1,13 @@
 package cn.sinjinsong.chat.client.actionListener;
 
 import cn.sinjinsong.chat.client.ChatClient;
+import cn.sinjinsong.chat.client.GUI.OneToOneChatFrame;
 import cn.sinjinsong.common.domain.Message;
 import cn.sinjinsong.common.domain.MessageHeader;
 import cn.sinjinsong.common.domain.TaskDescription;
 import cn.sinjinsong.common.enumeration.MessageType;
 import cn.sinjinsong.common.enumeration.TaskType;
+import cn.sinjinsong.common.util.DateTimeUtil;
 import cn.sinjinsong.common.util.ProtoStuffUtil;
 import org.springframework.stereotype.Component;
 
@@ -36,13 +38,8 @@ public class MainSendMassageListener implements ActionListener {
             if (content.startsWith("@")) {
                 String[] slices = content.split(":");
                 String receiver = slices[0].substring(1);
-                message = new Message(
-                        MessageHeader.builder()
-                                .type(MessageType.NORMAL)
-                                .sender(ChatClient.username)
-                                .receiver(receiver)
-                                .timestamp(System.currentTimeMillis())
-                                .build(), slices[1].getBytes(charset));
+                new OneToOneChatFrame(receiver,"",300, 300, 600, 400);
+                return;
             } else if (content.startsWith("task")) {
                 String info = content.substring(content.indexOf('.') + 1);
                 int split = info.indexOf(':');
@@ -69,4 +66,5 @@ public class MainSendMassageListener implements ActionListener {
             e.printStackTrace();
         }
     }
+
 }

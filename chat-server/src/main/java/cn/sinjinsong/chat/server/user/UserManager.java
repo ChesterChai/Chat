@@ -7,6 +7,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.nio.channels.SocketChannel;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -55,6 +57,15 @@ public class UserManager {
 
     public synchronized Set<String> usersOnline(){
         return nameToChannel.keySet();
+    }
+
+    public Set<String> allUserName(){
+        Set<String> res = new HashSet<>();
+        Set<DaoUser> alluser = daoUserDao.allUser();
+        for(DaoUser u:alluser){
+            res.add(u.getUserName());
+        }
+        return res;
     }
     
     public synchronized void logout(SocketChannel channel) {
